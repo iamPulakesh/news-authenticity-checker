@@ -74,7 +74,6 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 │   └── main.py
 ├── data/            
 │   ├── raw/           # fact-check datasets (downloaded via scripts/)
-│   └── vectorstore/   # Pinecone
 ├── frontend/
 │   └── streamlit_app.py
 ├── scripts/           # Utilities for downloading and ingesting fact-check datasets
