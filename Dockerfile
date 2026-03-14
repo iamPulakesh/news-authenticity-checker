@@ -3,7 +3,7 @@ FROM python:3.11-slim
 # System dependencies 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
-    libgl1-mesa-glx libglib2.0-0 libsm6 libxrender1 libxext6 \
+    libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 \
     git curl \
     && rm -rf /var/lib/apt/lists/*
 
