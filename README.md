@@ -62,18 +62,27 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 
 ```text
 ├── app/
-│   ├── agent/         # LangGraph state machine, 
-│   ├── models/        # data models 
+│   ├── agent/         # LangGraph state machine
+│   │   ├── graph.py       # agent graph definition
+│   │   ├── prompts.py     # prompt templates
+│   │   ├── runner.py      # execution entry point
+│   │   └── tools.py       # agent tools
+│   ├── models/        # data models
 │   ├── multimodal/    # OCR, URL scraping
-│   ├── rag/           # Vectorstore setup 
-│   ├── config.py      # configurations
-│   └── main.py     
+│   ├── rag/           # Vectorstore setup
+│   ├── config.py      
+│   └── main.py
+├── data/            
+│   ├── raw/           # fact-check datasets (downloaded via scripts/)
+│   └── vectorstore/   # Generated vectorstore index
 ├── frontend/
 │   └── streamlit_app.py
 ├── scripts/           # Utilities for downloading and ingesting fact-check datasets
-├── .env.example       
+├── tests/
+├── .env.example       # Copy to .env and fill in your credentials
 ├── requirements.txt
-├── Dockerfile          # Docker configuration
+├── .python-version
+├── Dockerfile
 └── README.md
 ```
 
