@@ -7,22 +7,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Non-root user
+RUN uv pip install --system --no-cache torch --index-url https://download.pytorch.org/whl/cpu
+
+COPY requirements.txt .
+RUN uv pip install --system --no-cache -r requirements.txt
+
+RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
 WORKDIR $HOME/app
-
-RUN uv pip install --system --no-cache torch --index-url https://download.pytorch.org/whl/cpu
-
-COPY --chown=user requirements.txt .
-RUN uv pip install --system --no-cache -r requirements.txt
-
-RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
 
 # Copy application code 
 COPY --chown=user . .
