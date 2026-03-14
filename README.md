@@ -72,7 +72,8 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 │   └── streamlit_app.py
 ├── scripts/           # Utilities for downloading and ingesting fact-check datasets
 ├── .env.example       
-├── requirements.txt  
+├── requirements.txt
+├── Dockerfile          # Docker configuration
 └── README.md
 ```
 

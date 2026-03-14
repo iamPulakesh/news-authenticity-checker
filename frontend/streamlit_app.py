@@ -3,10 +3,11 @@ import os
 import html
 import tempfile
 from pathlib import Path
-from app.rag.vectorstore import get_embeddings
-from app.multimodal.ocr import _get_easyocr_reader
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.rag.vectorstore import get_embeddings
+from app.multimodal.ocr import _get_easyocr_reader
 
 from dotenv import load_dotenv
 load_dotenv()
