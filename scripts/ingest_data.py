@@ -17,8 +17,7 @@ from pathlib import Path
 from app.rag.ingest import ingest_fact_checks
 from app.rag.vectorstore import get_collection_stats
 
-RAW_DIR     = "./data/raw"
-PERSIST_DIR = "./data/vectorstore"
+RAW_DIR = "./data/raw"
 
 
 def check_data_exists() -> bool:
@@ -64,13 +63,13 @@ if __name__ == "__main__":
         logger.info(f"Data found in {RAW_DIR}")
 
     start = time.time()
-    count = ingest_fact_checks(raw_dir=RAW_DIR, persist_dir=PERSIST_DIR)
+    count = ingest_fact_checks(raw_dir=RAW_DIR)
     elapsed = time.time() - start
 
-    stats = get_collection_stats(PERSIST_DIR)
+    stats = get_collection_stats()
 
     logger.info(
         "Ingestion complete in %.1fs -- "
-        "%d chunks stored at %s",
-        elapsed, stats['total_documents'], stats['persist_directory']
+        "%d chunks stored in Pinecone index '%s'",
+        elapsed, stats['total_documents'], stats['index_name']
     )

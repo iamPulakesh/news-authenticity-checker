@@ -1,13 +1,18 @@
 import csv
 import logging
+import time
 from pathlib import Path
 from typing import List
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone
 
-from app.rag.vectorstore import get_embeddings, VECTORSTORE_PATH, COLLECTION_NAME
+from app.rag.vectorstore import (
+    get_embeddings, ensure_index_exists, PINECONE_INDEX,
+)
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -118,20 +123,18 @@ def deduplicate(docs: List[Document]) -> List[Document]:
 
 def ingest_fact_checks(
     raw_dir:      str = "./data/raw",
-    persist_dir:  str = VECTORSTORE_PATH,
     batch_size:   int = 100,
 ) -> int:
     """
     Full ingestion pipeline:
-      Load CSVs -> Chunk -> Deduplicate -> Embed -> Store in ChromaDB
+      Load CSVs -> Chunk -> Deduplicate -> Embed -> Store in Pinecone
 
     Args:
         raw_dir:     Directory containing CSV fact-check files
-        persist_dir: Where to save ChromaDB (persists between runs)
         batch_size:  Number of docs to embed at once (memory management)
 
     Returns:
-        Number of chunks stored in ChromaDB
+        Number of chunks stored in Pinecone
     """
     logger.info("Ingestion pipeline starting...")
 
@@ -143,32 +146,49 @@ def ingest_fact_checks(
 
     chunks = deduplicate(chunks)
 
-    logger.info("Embedding %d chunks into ChromaDB...", len(chunks))
+    logger.info("Embedding %d chunks into Pinecone...", len(chunks))
 
     embeddings = get_embeddings()
-    Path(persist_dir).mkdir(parents=True, exist_ok=True)
 
-    import chromadb
-    client = chromadb.PersistentClient(path=persist_dir)
+    # Ensure Pinecone index exists
+    ensure_index_exists()
+
+    # Clear existing vectors before re-ingesting
+    logger.info("Clearing existing vectors from Pinecone index...")
     try:
-        client.delete_collection(COLLECTION_NAME)
-    except Exception:
-        pass
+        pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+        index = pc.Index(PINECONE_INDEX)
+        index.delete(delete_all=True)
+        time.sleep(3)  # Wait for deletion to propagate
+        logger.info("Existing vectors cleared.")
+    except Exception as e:
+        logger.warning("Could not clear existing vectors (may be empty): %s", e)
 
-    vectorstore = None
+    # Create vectorstore and add documents in batches
+    vectorstore = PineconeVectorStore(
+        index_name=PINECONE_INDEX,
+        embedding=embeddings,
+        pinecone_api_key=settings.PINECONE_API_KEY,
+    )
+
+    total_batches = (len(chunks) + batch_size - 1) // batch_size
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i : i + batch_size]
-        if vectorstore is None:
-            vectorstore = Chroma.from_documents(
-                documents=batch,
-                embedding=embeddings,
-                collection_name=COLLECTION_NAME,
-                persist_directory=persist_dir,
-            )
-        else:
-            vectorstore.add_documents(batch)
+        batch_num = (i // batch_size) + 1
+        vectorstore.add_documents(batch)
+        logger.info("  Batch %d/%d ingested (%d docs)", batch_num, total_batches, len(batch))
+        time.sleep(0.5)  # Small delay to respect rate limits on free tier
 
-    final_count = vectorstore._collection.count()
-    logger.info("Ingestion complete -- %d chunks stored in ChromaDB", final_count)
+    # Wait for indexing to complete and get final count
+    time.sleep(3)
+    try:
+        pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+        index = pc.Index(PINECONE_INDEX)
+        stats = index.describe_index_stats()
+        final_count = stats.total_vector_count
+    except Exception:
+        final_count = len(chunks)
+
+    logger.info("Ingestion complete -- %d chunks stored in Pinecone", final_count)
 
     return final_count

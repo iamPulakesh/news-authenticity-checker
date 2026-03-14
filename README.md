@@ -7,7 +7,7 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 
 * **Multi-modal Input**: Accepts Live News URLs, Image Uploads (news screenshots/posters) and direct Text/Headline inputs.
 * **Intelligent Claim Extraction**: Identifies the core, verifiable claims within the provided information.
-* **Hybrid Verification**: Checks claims against a local vector db of pre-ingested fact-checks *and* performs live web searches for the latest context.
+* **Hybrid Verification**: Checks claims against pre-ingested fact-checks and performs live web searches for the latest context.
 * **Transparent Reasoning**: Outputs a definitive verdict (True, False, Misleading, Unverified) with a confidence score, detailed reasoning, claim-by-claim breakdowns and the exact source URLs consulted.
 ---
 
@@ -17,7 +17,7 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 * **Agent Framework**: [LangChain](https://python.langchain.com/) and [LangGraph](https://python.langchain.com/docs/langgraph).
 * **LLMs**: Open-weight and proprietary models via [Groq](https://groq.com/).
 * **Information Retrieval**: 
-  * [ChromaDB](https://www.trychroma.com/)
+  * [Pinecone](https://www.pinecone.io/)
   * HuggingFace `sentence-transformers`
   * [Tavily AI](https://tavily.com/)
 * **Data Scraping & OCR**:
@@ -74,7 +74,7 @@ An AI-powered system designed to analyze news headlines, paragraphs, image snaps
 │   └── main.py
 ├── data/            
 │   ├── raw/           # fact-check datasets (downloaded via scripts/)
-│   └── vectorstore/   # Generated vectorstore index
+│   └── vectorstore/   # Pinecone
 ├── frontend/
 │   └── streamlit_app.py
 ├── scripts/           # Utilities for downloading and ingesting fact-check datasets

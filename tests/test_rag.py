@@ -35,7 +35,7 @@ class TestVectorstore:
 
     @pytest.mark.skipif(
         not get_collection_stats().get("ready", False),
-        reason="ChromaDB not ingested yet"
+        reason="Pinecone not ingested yet"
     )
     def test_has_documents(self):
         stats = get_collection_stats()

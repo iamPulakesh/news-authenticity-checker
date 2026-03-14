@@ -60,12 +60,11 @@ def cmd_ui(args):
 def cmd_ingest(args):
     """Run the RAG data ingestion pipeline."""
 
-    raw_dir     = str(settings.RAW_DATA_DIR)
-    persist_dir = str(settings.VECTORSTORE_DIR)
+    raw_dir = str(settings.RAW_DATA_DIR)
 
     logger.info("Starting RAG ingestion pipeline...")
-    count = ingest_fact_checks(raw_dir=raw_dir, persist_dir=persist_dir)
-    logger.info("Ingested %d chunks into ChromaDB.", count)
+    count = ingest_fact_checks(raw_dir=raw_dir)
+    logger.info("Ingested %d chunks into Pinecone.", count)
 
 
 def main():

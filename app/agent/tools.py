@@ -125,7 +125,7 @@ def rag_search_tool(query: str) -> str:
 
     except FileNotFoundError:
         return (
-            "RAG_ERROR: ChromaDB not initialized. "
+            "RAG_ERROR: Pinecone index not initialized. "
             "Run: python scripts/ingest_data.py"
         )
     except Exception as e:

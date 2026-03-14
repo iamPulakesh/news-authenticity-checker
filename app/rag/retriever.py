@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from langchain_core.documents import Document
-from app.rag.vectorstore import get_vectorstore, VECTORSTORE_PATH
+from app.rag.vectorstore import get_vectorstore
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,6 @@ def retrieve_relevant_factchecks(
     query:         str,
     top_k:         int  = 5,
     use_mmr:       bool = True,
-    persist_dir:   str  = VECTORSTORE_PATH,
 ) -> List[Document]:
     """
     Retrieve the most relevant fact-checks for a given query.
@@ -20,12 +19,11 @@ def retrieve_relevant_factchecks(
         top_k:      Number of results to return
         use_mmr:    If True, use MMR for diverse results;
                     if False, use pure cosine similarity
-        persist_dir: ChromaDB location
 
     Returns:
         List of LangChain Documents with metadata
     """
-    vectorstore = get_vectorstore(persist_dir)
+    vectorstore = get_vectorstore()
 
     if use_mmr:
         docs = vectorstore.max_marginal_relevance_search(
@@ -44,14 +42,13 @@ def retrieve_relevant_factchecks(
 def retrieve_with_scores(
     query:       str,
     top_k:       int = 5,
-    persist_dir: str = VECTORSTORE_PATH,
 ) -> List[tuple[Document, float]]:
     """
     Retrieve results with their similarity scores (0.0-1.0).
     Useful for debugging and the evaluation notebook.
     """
-    vectorstore = get_vectorstore(persist_dir)
-    results     = vectorstore.similarity_search_with_relevance_scores(query, k=top_k)
+    vectorstore = get_vectorstore()
+    results     = vectorstore.similarity_search_with_score(query, k=top_k)
     logger.info("Top score: %.3f", results[0][1]) if results else logger.info("No results")
     return results
 
@@ -89,7 +86,6 @@ Evidence: {doc.page_content[:400]}"""
 def retrieve_for_claims(
     claims:      List[str],
     top_k_each:  int = 3,
-    persist_dir: str = VECTORSTORE_PATH,
 ) -> dict:
     """
     Retrieve fact-checks for a list of individual claims.
@@ -105,7 +101,7 @@ def retrieve_for_claims(
     """
     results = {}
     for claim in claims:
-        docs    = retrieve_relevant_factchecks(claim, top_k=top_k_each, persist_dir=persist_dir)
+        docs    = retrieve_relevant_factchecks(claim, top_k=top_k_each)
         results[claim] = {
             "docs":      docs,
             "formatted": format_retrieved_context(docs)
@@ -113,12 +109,12 @@ def retrieve_for_claims(
     return results
 
 
-def get_retriever(persist_dir: str = VECTORSTORE_PATH, top_k: int = 5):
+def get_retriever(top_k: int = 5):
     """
     Returns a LangChain-compatible retriever object.
     This is what gets passed into the LangChain RAG chain.
     """
-    vectorstore = get_vectorstore(persist_dir)
+    vectorstore = get_vectorstore()
     return vectorstore.as_retriever(
         search_type="mmr",
         search_kwargs={
@@ -134,7 +130,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     query = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "vaccines cause autism"
 
-    logger.info("Querying ChromaDB for: '%s'", query)
+    logger.info("Querying Pinecone for: '%s'", query)
     logger.info("-" * 60)
 
     try:
@@ -144,5 +140,5 @@ if __name__ == "__main__":
             logger.info("   Verdict : %s", doc.metadata.get('verdict', '?').upper())
             logger.info("   Source  : %s", doc.metadata.get('source', '?'))
             logger.info("   Content : %s", doc.page_content[:200])
-    except FileNotFoundError as e:
+    except Exception as e:
         logger.error("%s", e)

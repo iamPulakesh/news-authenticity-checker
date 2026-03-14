@@ -6,8 +6,8 @@ langchain-groq
 langgraph
 sentence-transformers
 torch
-chromadb
-langchain-chroma
+pinecone
+langchain-pinecone
 tavily-python
 newspaper3k
 beautifulsoup4

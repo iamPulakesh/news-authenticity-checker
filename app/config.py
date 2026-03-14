@@ -7,7 +7,6 @@ load_dotenv()
 PROJECT_ROOT   = Path(__file__).resolve().parents[1]
 DATA_DIR       = PROJECT_ROOT / "data"
 RAW_DATA_DIR   = DATA_DIR / "raw"
-VECTORSTORE_DIR = DATA_DIR / "vectorstore"
 
 GROQ_API_KEY              = os.getenv("GROQ_API_KEY", "")
 TAVILY_API_KEY            = os.getenv("TAVILY_API_KEY", "")
@@ -19,8 +18,12 @@ LLM_MAX_TOKENS  = 2048
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 EMBEDDING_DEVICE = os.getenv("EMBEDDING_DEVICE", "cpu")
+EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "384"))
 
-CHROMA_COLLECTION_NAME = "factchecks"
+PINECONE_API_KEY    = os.getenv("PINECONE_API_KEY", "")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "")
+PINECONE_CLOUD      = os.getenv("PINECONE_CLOUD", "aws")
+PINECONE_REGION     = os.getenv("PINECONE_REGION", "us-east-1")
 
 USE_GPU       = os.getenv("USE_GPU", "false").lower() == "true"
 MAX_FILE_SIZE = 5 * 1024 * 1024
